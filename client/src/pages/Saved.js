@@ -1,50 +1,37 @@
-import { BrowserRouter, Link } from 'react-router-dom';
-import { Col, Container, Row } from '../components/Grid';
-import React, { useEffect, useState } from 'react';
-import API from '../utils/API';
-import Jumbotron from '../components/Jumbotron';
-import PropTypes from 'prop-types';
+import React from "react";
+import API from "../utils/API";
+import SavedJumbotron from "../components/SavedJumbotron";
+class Saved extends React.Component {
+  state = {
+    bookList: [],
+  };
+  
+  componentDidMount() {
+    this.savedBook();
+  }
 
-function Detail(props) {
-    const [book, setBook] = useState({});
+  savedBook = () => {
+    API.getBooks()
+      .then((res) =>
+        this.setState({
+          bookList: res.data,
+        })
+      )
+      .catch((err) => console.log(err));
+  };
+  deleteBook = (id) => {
+    API.deleteBook(id)
+      .then((res) => this.savedBook())
+      .catch((err) => console.log(err));
+  };
 
-    // When this component mounts, grab the book with the _id of props.match.params.id
-    // e.g. localhost:3000/books/599dcb67f0f16317844583fc
-    useEffect(() => {
-        API.getBook(props.match.params.id)
-            .then(res => setBook(res.data))
-            .catch(err => console.error(err));
-    }, [props.match.params.id]);
-
+  render() {
     return (
-        <Container fluid>
-            <Row>
-                <Col size="md-12">
-                    <Jumbotron>
-                        <h1>
-                            {book.title} by {book.author}
-                        </h1>
-                    </Jumbotron>
-                </Col>
-            </Row>
-            <Row>
-                <Col size="md-10 md-offset-1">
-                    <article>
-                        <h1>Synopsis</h1>
-                        <p>{book.synopsis}</p>
-                    </article>
-                </Col>
-            </Row>
-            <Row>
-                <Col size="md-2">
-                    <Link to="/">← Back to Authors</Link>
-                </Col>
-            </Row>
-        </Container>
+      <SavedJumbotron
+        saved={this.state.bookList}
+        deleteBook={this.deleteBook}
+      />
     );
+  }
 }
-Detail.propTypes = {
-    match: PropTypes.object
-};
-
-export default Detail;
+export default Saved;
